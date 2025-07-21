@@ -1,0 +1,45 @@
+# A name for our set of checks
+name: Pre-Merge Quality Checks
+
+# This tells GitHub *when* to run our checks.
+# 'on: [pull_request]' means it will run on every new pull request.
+on: [pull_request]
+
+# This section defines the actual tasks to perform.
+jobs:
+  # We'll name our first job 'check-for-forbidden-words'
+  check-for-forbidden-words:
+    # A more descriptive name that will appear on GitHub
+    name: Check for Forbidden Words
+
+    # The workflow will run on a free, temporary virtual computer running Ubuntu Linux.
+    runs-on: ubuntu-latest
+
+    # These are the specific steps the computer will follow.
+    steps:
+      # Step 1: This is a standard action that downloads your repository's code
+      # onto the virtual computer so it can be checked.
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      # Step 2: This is our custom check.
+      - name: Search for the forbidden word "FIXME"
+        run: |
+          # We use the 'grep' command to search for text in files.
+          # The 'if' statement checks if grep finds the word "FIXME" anywhere.
+          # The '-r' flag means search recursively through all folders.
+          # The '.' means start searching from the current directory.
+          # The `! grep -r "FIXME" .` means "if the command `grep -r "FIXME" .` FAILS".
+          # The grep command fails (returns a non-zero exit code) if it doesn't find anything.
+          # So this script will succeed if "FIXME" is NOT found.
+          if ! grep -r "FIXME" .
+          then
+            # If the word is NOT found, print a success message and exit successfully.
+            echo "Check passed! The word 'FIXME' was not found."
+            exit 0
+          else
+            # If the word IS found, print an error, and exit with an error code (1).
+            # Exiting with an error code is what makes the GitHub check fail.
+            echo "ERROR: The forbidden word 'FIXME' was found. Please remove it."
+            exit 1
+          fi
